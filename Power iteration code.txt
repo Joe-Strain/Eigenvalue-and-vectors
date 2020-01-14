@@ -1,0 +1,85 @@
+PROGRAM power_iteration
+!*** A program that uses the power iteration method to find
+!*** the largest eigenvalue and its associated  eigenvector
+
+  IMPLICIT NONE
+
+  INTEGER, PARAMETER :: n=3
+  DOUBLE PRECISION, PARAMETER :: tol=1.0e-07
+  DOUBLE PRECISION :: a(n,n), u(n), lambda
+  INTEGER :: i, j, it
+
+  !*** Matrix A
+  data (a(1,i), i=1,3) /   7.0,  0.0,  -3.0 /
+  data (a(2,i), i=1,3) /   -9.0,  -2.0, 3.0 /
+  data (a(3,i), i=1,3) /   18.0, 0.0,  -8.0 /
+
+  !*** Initial vector
+  data (u(i),i=1,3)    / -1.0,  -2.0,  -1.0 /
+
+    PRINT*, "Matrix A"
+    do i=1,n
+      PRINT "(6F12.5)", (a(i,j),j=1,n)
+    end do
+
+    PRINT*," "
+    PRINT* , "Intial vector"
+    PRINT "(6F12.5)", (u(i),i=1,3)
+
+  call Iteration(a,u,lambda,tol,n,it)
+
+! Print the solutions
+  PRINT*," "
+  PRINT*,"The largest eigenvalue is"
+  PRINT "(6F12.5)", lambda
+  PRINT*," "
+  PRINT*,"Eigenvector"
+  PRINT "(6F12.5)", (u(i),i=1,n)
+  PRINT*," "
+  PRINT*, "Iterations =", it
+
+END PROGRAM  power_iteration
+
+SUBROUTINE Iteration(a,u,lambda,tol,n,it)
+!*** This subroutine carries out the iterations in the power method
+
+  IMPLICIT NONE
+  INTEGER ::  n, it, k, i, j
+  DOUBLE PRECISION :: a(n,n),u(n),lambda, tol
+  DOUBLE PRECISION :: Au(n),lambda0, norm, norm_sq
+  INTEGER, PARAMETER ::kmax=1000
+
+  lambda0=0.0
+
+  DO k=1,kmax
+    !*** compute Au=A*u
+    DO i=1,n
+      Au(i)=0.0
+      DO j=1,n
+        Au(i) = Au(i)+a(i,j)*u(j)
+      END DO
+    END DO
+
+    !*** normalize coefficient
+    norm_sq = 0.0
+    DO i=1,n
+      norm_sq = norm_sq + Au(i)*Au(i)
+    END DO
+    norm = sqrt(norm_sq)
+
+    !*** Normalize vector u(n) ready for the next iterartion
+    DO i=1,n
+      u(i)=Au(i)/norm
+    END DO
+    lambda = norm
+
+    !*** check if it has converged
+    IF (abs(lambda-lambda0) < tol) EXIT
+
+   lambda0 = lambda
+  END DO
+
+  it = k
+  IF(k == kmax) PRINT*,"The eigenvalue failed to converge"
+
+END SUBROUTINE Iteration
